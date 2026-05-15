@@ -1,4 +1,5 @@
 import { createServer } from "node:http";
+import { existsSync } from "node:fs";
 import { mkdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -26,15 +27,21 @@ import type { ConnectedClient } from "./types.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const UPLOADS_DIR = path.join(__dirname, "..", "uploads");
+const WEB_DIST = path.join(__dirname, "../../web/dist");
 const PORT = Number(process.env.PORT) || 3001;
-const WEB_ORIGIN = process.env.WEB_ORIGIN || "http://localhost:5173";
+const PUBLIC_URL = process.env.PUBLIC_URL;
+const WEB_ORIGIN = process.env.WEB_ORIGIN || PUBLIC_URL || "http://localhost:5173";
+const isProduction = process.env.NODE_ENV === "production";
 
 await mkdir(UPLOADS_DIR, { recursive: true });
 
 const app = express();
+const corsOrigins = [WEB_ORIGIN, "http://localhost:5173"];
+if (PUBLIC_URL && !corsOrigins.includes(PUBLIC_URL)) corsOrigins.push(PUBLIC_URL);
+
 app.use(
   cors({
-    origin: [WEB_ORIGIN, "http://localhost:5173"],
+    origin: corsOrigins,
     credentials: true,
   }),
 );
@@ -64,7 +71,10 @@ const upload = multer({
 });
 
 function publicBaseUrl(req: express.Request): string {
-  return process.env.PUBLIC_URL || WEB_ORIGIN;
+  if (PUBLIC_URL) return PUBLIC_URL.replace(/\/$/, "");
+  const host = req.get("host");
+  if (host) return `${req.protocol}://${host}`;
+  return WEB_ORIGIN;
 }
 
 app.post("/api/rooms", upload.single("pdf"), async (req, res) => {
@@ -155,10 +165,17 @@ app.get("/api/rooms/:roomId/pdf", (req, res) => {
   });
 });
 
+if (existsSync(WEB_DIST)) {
+  app.use(express.static(WEB_DIST));
+  app.get(/^(?!\/api\/|\/socket\.io).*/, (_req, res) => {
+    res.sendFile(path.join(WEB_DIST, "index.html"));
+  });
+}
+
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: [WEB_ORIGIN, "http://localhost:5173"],
+    origin: corsOrigins,
     credentials: true,
   },
 });
@@ -191,5 +208,9 @@ attachSocketHandlers({
 });
 
 httpServer.listen(PORT, () => {
-  console.log(`Share Slides server on http://localhost:${PORT}`);
+  const mode = existsSync(WEB_DIST) ? "app + API" : "API only";
+  console.log(`Share Slides (${mode}) on port ${PORT}`);
+  if (isProduction && !existsSync(WEB_DIST)) {
+    console.warn("Warning: web dist not found — run npm run build first");
+  }
 });

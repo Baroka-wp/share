@@ -49,6 +49,7 @@ export default function RoomPage() {
           );
         }
         if (!res.ok) throw new Error(data.error ?? "Room not found");
+        if (!data.room) throw new Error("Room not found");
         if (cancelled) return;
         setRoomMeta({
           hasPin: data.room.hasPin,

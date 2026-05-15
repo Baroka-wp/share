@@ -19,13 +19,40 @@ npm run dev
 3. Use **Next / Previous** or arrow keys when you have control.
 4. Participants can **Take control** if the presenter allows it.
 
+## Production (single server)
+
+```bash
+npm run preview   # build + start on port 3001
+# open http://localhost:3001
+```
+
+Or:
+
+```bash
+npm run build
+NODE_ENV=production PORT=3001 npm run start
+```
+
+The API and the React app are served from the same port.
+
+## Deploy online (Render)
+
+1. Push the repo to GitHub.
+2. [render.com](https://render.com) → **New Web Service** → connect the repo.
+3. Use the `render.yaml` in the repo (or set build: `npm install && npm run build`, start: `npm run start`).
+4. Set **`PUBLIC_URL`** to your Render URL (e.g. `https://share-slides.onrender.com`).
+5. Deploy. Participants and presenter use the same URL.
+
+**Note:** On the free tier, the service sleeps when idle; uploaded PDFs are lost on redeploy (ephemeral disk). Fine for demos.
+
 ## Environment
 
 | Variable     | Default                 | Description                          |
 |-------------|-------------------------|--------------------------------------|
 | `PORT`      | `3001`                  | Server port                          |
-| `WEB_ORIGIN`| `http://localhost:5173` | CORS origin for the web app          |
-| `PUBLIC_URL`| same as web             | Base URL in API responses (join link)|
+| `NODE_ENV`  | —                       | Set to `production` when deployed    |
+| `WEB_ORIGIN`| `http://localhost:5173` | Extra CORS origin (dev)              |
+| `PUBLIC_URL`| auto from request       | Public URL for join links & QR       |
 
 ## Security notes
 
