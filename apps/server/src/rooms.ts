@@ -75,9 +75,25 @@ export function toPublic(room: RoomState): RoomPublic {
   };
 }
 
+export function normalizePin(pin: string | null | undefined): string {
+  if (!pin) return "";
+  return pin.replace(/\D/g, "");
+}
+
 export function verifyPin(room: RoomState, pin: string | null | undefined): boolean {
   if (!room.pin) return true;
-  return pin === room.pin;
+  return normalizePin(pin) === normalizePin(room.pin);
+}
+
+export function findRoomByPin(code: string): RoomState | undefined {
+  const target = normalizePin(code);
+  if (target.length < 6) return undefined;
+  const now = Date.now();
+  for (const room of rooms.values()) {
+    if (now > room.expiresAt) continue;
+    if (room.pin && normalizePin(room.pin) === target) return room;
+  }
+  return undefined;
 }
 
 export function verifyPresenterToken(room: RoomState, token: string | null | undefined): boolean {

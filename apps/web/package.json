@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@share-slides/shared": "*",
+    "geist": "^1.7.0",
     "pdfjs-dist": "^4.10.38",
     "qrcode.react": "^4.2.0",
     "react": "^19.1.0",

@@ -1,0 +1,80 @@
+:root {
+  /* Surfaces */
+  --color-surface: #f9f9ff;
+  --color-surface-dim: #d3daef;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f1f3ff;
+  --color-surface-container: #e9edff;
+  --color-surface-container-high: #e1e8fd;
+  --color-surface-container-highest: #dce2f7;
+  --color-surface-variant: #dce2f7;
+
+  /* Content */
+  --color-on-surface: #141b2b;
+  --color-on-surface-variant: #464555;
+  --color-inverse-surface: #293040;
+  --color-inverse-on-surface: #edf0ff;
+
+  /* Borders */
+  --color-outline: #777587;
+  --color-outline-variant: #c7c4d8;
+
+  /* Brand */
+  --color-primary: #3525cd;
+  --color-primary-container: #4f46e5;
+  --color-on-primary: #ffffff;
+  --color-on-primary-container: #dad7ff;
+  --color-surface-tint: #4d44e3;
+  --color-inverse-primary: #c3c0ff;
+  --color-primary-fixed: #e2dfff;
+  --color-on-primary-fixed: #0f0069;
+
+  /* Secondary */
+  --color-secondary: #5c5f60;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #e1e3e4;
+  --color-on-secondary-container: #626566;
+
+  /* Tertiary / live */
+  --color-tertiary: #005338;
+  --color-tertiary-container: #006e4b;
+  --color-on-tertiary-container: #67f4b7;
+  --color-live: #10b981;
+  --color-live-container: #d1fae5;
+  --color-on-live-container: #065f46;
+
+  /* Error */
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #93000a;
+
+  --color-background: #f9f9ff;
+  --color-on-background: #141b2b;
+
+  /* Typography */
+  --font-display: "Geist", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+
+  /* Radius */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-full: 9999px;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --gutter: 24px;
+  --margin-mobile: 16px;
+  --margin-desktop: 48px;
+  --max-width: 1280px;
+
+  /* Elevation */
+  --shadow-modal: 0 10px 15px -3px rgba(20, 27, 43, 0.05);
+}

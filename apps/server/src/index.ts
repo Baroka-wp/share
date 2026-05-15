@@ -17,6 +17,7 @@ import {
 } from "@share-slides/shared";
 import {
   createRoom,
+  findRoomByPin,
   getRoom,
   toPublic,
   verifyPin,
@@ -125,6 +126,16 @@ app.get("/api/rooms/:roomId", (req, res) => {
     return;
   }
   res.json({ room: toPublic(room) });
+});
+
+app.post("/api/rooms/join-by-pin", (req, res) => {
+  const code = typeof req.body.code === "string" ? req.body.code : "";
+  const room = findRoomByPin(code);
+  if (!room) {
+    res.status(404).json({ error: "Session introuvable" });
+    return;
+  }
+  res.json({ roomId: room.id, title: room.title });
 });
 
 app.post("/api/rooms/:roomId/verify-pin", (req, res) => {
