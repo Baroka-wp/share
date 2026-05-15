@@ -138,7 +138,7 @@ export function createRoom(input: {
     pageCount: input.pageCount,
     currentPage: 1,
     controllerId: null,
-    allowTakeControl: true,
+    allowTakeControl: false,
     requireName: Boolean(input.requireName),
     presenterToken,
     pin: input.pin ?? null,

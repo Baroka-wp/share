@@ -187,7 +187,7 @@ export default function RoomPage() {
           connected={socket.connected}
           controllerName={socket.controllerName}
           isController={socket.isController}
-          allowTakeControl={socket.room?.allowTakeControl ?? true}
+          allowTakeControl={socket.room?.allowTakeControl ?? false}
           presence={socket.presence}
           myName={myName}
           onPrev={() => socket.goToPage(Math.max(1, socket.currentPage - 1))}
@@ -220,7 +220,7 @@ export default function RoomPage() {
         pin={socket.presenterPin}
         presence={socket.presence}
         clientId={socket.clientId}
-        allowTakeControl={socket.room?.allowTakeControl ?? true}
+        allowTakeControl={socket.room?.allowTakeControl ?? false}
         requireName={socket.room?.requireName ?? roomMeta?.requireName ?? false}
         isController={socket.isController}
         onToggleAllowTakeControl={(allow) =>
