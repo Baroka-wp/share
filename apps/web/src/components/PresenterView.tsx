@@ -102,6 +102,18 @@ export default function PresenterView({
     return () => window.removeEventListener("keydown", onKey);
   }, [isController, onPrev, onNext]);
 
+  useEffect(() => {
+    if (!showSettings && !showQr) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setShowSettings(false);
+        setShowQr(false);
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [showSettings, showQr]);
+
   return (
     <div className="presenter-dashboard">
       <PresenterHeader />
@@ -220,11 +232,45 @@ export default function PresenterView({
             </div>
           </div>
 
-          {showSettings && (
-            <div className="presenter-settings-panel">
-              <p className="text-body">
-                Session : <strong>{title}</strong>
-              </p>
+        </div>
+      </div>
+
+      <footer className="site-footer presenter-site-footer">
+        <p className="site-footer-copy">© {new Date().getFullYear()} Share Slides. Tous droits réservés.</p>
+        <nav className="site-footer-nav" aria-label="Legal">
+          <a href="#terms">Conditions</a>
+          <a href="#privacy">Confidentialité</a>
+          <a href="#security">Sécurité</a>
+          <a href="#contact">Contact</a>
+        </nav>
+      </footer>
+
+      {showSettings && (
+        <div
+          className="modal-backdrop"
+          role="dialog"
+          aria-modal
+          aria-labelledby="presenter-settings-title"
+          onClick={() => setShowSettings(false)}
+        >
+          <div className="modal-card modal-card--sheet" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-card-header">
+              <h2 id="presenter-settings-title" className="text-headline">
+                Réglages
+              </h2>
+              <button
+                type="button"
+                className="modal-close"
+                aria-label="Fermer"
+                onClick={() => setShowSettings(false)}
+              >
+                ×
+              </button>
+            </div>
+            <p className="text-body modal-card-lead">
+              Session : <strong>{title}</strong>
+            </p>
+            <div className="presenter-settings-form">
               <label className="toggle">
                 <input
                   type="checkbox"
@@ -242,19 +288,9 @@ export default function PresenterView({
                 Exiger un nom à la connexion
               </label>
             </div>
-          )}
+          </div>
         </div>
-      </div>
-
-      <footer className="site-footer presenter-site-footer">
-        <p className="site-footer-copy">© {new Date().getFullYear()} Share Slides. Tous droits réservés.</p>
-        <nav className="site-footer-nav" aria-label="Legal">
-          <a href="#terms">Conditions</a>
-          <a href="#privacy">Confidentialité</a>
-          <a href="#security">Sécurité</a>
-          <a href="#contact">Contact</a>
-        </nav>
-      </footer>
+      )}
 
       {showQr && (
         <div
