@@ -1,7 +1,8 @@
 :root {
-  /* Surfaces */
+  /* —— Surfaces —— */
   --color-surface: #f9f9ff;
   --color-surface-dim: #d3daef;
+  --color-surface-bright: #f9f9ff;
   --color-surface-container-lowest: #ffffff;
   --color-surface-container-low: #f1f3ff;
   --color-surface-container: #e9edff;
@@ -9,17 +10,17 @@
   --color-surface-container-highest: #dce2f7;
   --color-surface-variant: #dce2f7;
 
-  /* Content */
+  /* —— Content —— */
   --color-on-surface: #141b2b;
   --color-on-surface-variant: #464555;
   --color-inverse-surface: #293040;
   --color-inverse-on-surface: #edf0ff;
 
-  /* Borders */
+  /* —— Borders —— */
   --color-outline: #777587;
   --color-outline-variant: #c7c4d8;
 
-  /* Brand */
+  /* —— Brand —— */
   --color-primary: #3525cd;
   --color-primary-container: #4f46e5;
   --color-on-primary: #ffffff;
@@ -27,36 +28,48 @@
   --color-surface-tint: #4d44e3;
   --color-inverse-primary: #c3c0ff;
   --color-primary-fixed: #e2dfff;
+  --color-primary-fixed-dim: #c3c0ff;
   --color-on-primary-fixed: #0f0069;
+  --color-on-primary-fixed-variant: #3323cc;
 
-  /* Secondary */
+  /* —— Secondary —— */
   --color-secondary: #5c5f60;
   --color-on-secondary: #ffffff;
   --color-secondary-container: #e1e3e4;
   --color-on-secondary-container: #626566;
+  --color-secondary-fixed: #e1e3e4;
+  --color-secondary-fixed-dim: #c5c7c8;
+  --color-on-secondary-fixed: #191c1d;
+  --color-on-secondary-fixed-variant: #454748;
 
-  /* Tertiary / live */
+  /* —— Tertiary / live —— */
   --color-tertiary: #005338;
+  --color-on-tertiary: #ffffff;
   --color-tertiary-container: #006e4b;
   --color-on-tertiary-container: #67f4b7;
+  --color-tertiary-fixed: #6ffbbe;
+  --color-tertiary-fixed-dim: #4edea3;
+  --color-on-tertiary-fixed: #002113;
+  --color-on-tertiary-fixed-variant: #005236;
   --color-live: #10b981;
   --color-live-container: #d1fae5;
   --color-on-live-container: #065f46;
 
-  /* Error */
+  /* —— Error —— */
   --color-error: #ba1a1a;
   --color-on-error: #ffffff;
   --color-error-container: #ffdad6;
   --color-on-error-container: #93000a;
 
+  /* —— Background —— */
   --color-background: #f9f9ff;
   --color-on-background: #141b2b;
 
-  /* Typography */
-  --font-display: "Geist", system-ui, sans-serif;
-  --font-body: "Inter", system-ui, sans-serif;
+  /* —— Typography —— */
+  --font-display: "Geist", system-ui, -apple-system, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, sans-serif;
 
-  /* Radius */
+  /* —— Radius (per design system) —— */
   --radius-sm: 0.25rem;
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
@@ -64,7 +77,8 @@
   --radius-2xl: 1.5rem;
   --radius-full: 9999px;
 
-  /* Spacing */
+  /* —— Spacing —— */
+  --space-base: 4px;
   --space-xs: 4px;
   --space-sm: 8px;
   --space-md: 16px;
@@ -75,6 +89,10 @@
   --margin-desktop: 48px;
   --max-width: 1280px;
 
-  /* Elevation */
+  /* —— Elevation (subtle, tonal) —— */
   --shadow-modal: 0 10px 15px -3px rgba(20, 27, 43, 0.05);
+
+  /* —— Motion —— */
+  --transition-fast: 0.15s ease;
+  --transition: 0.2s ease;
 }

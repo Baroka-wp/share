@@ -40,6 +40,7 @@ export default function PinJoinGate({ roomId, title, onSuccess }: Props) {
         return;
       }
       sessionStorage.setItem(`pin:${roomId}`, code);
+      sessionStorage.setItem(`role:${roomId}`, "viewer");
       onSuccess(code);
     } catch {
       setError(true);

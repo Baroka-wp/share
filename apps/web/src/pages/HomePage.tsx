@@ -58,29 +58,25 @@ export default function HomePage() {
 
       <section className="landing-hero">
         <div className="landing-hero-content">
-          <span className="badge badge-live landing-live-badge">Live sync</span>
+          <span className="badge badge-live landing-live-badge">Sync en direct</span>
           <h1 className="landing-headline">
             Remplacez le projecteur,{" "}
             <span className="landing-headline-accent">pas l&apos;attention.</span>
           </h1>
           <p className="landing-lead">
             Partagez vos présentations PDF en direct sur les appareils de votre
-            audience. Une synchronisation parfaite pour des présentations
-            mémorables.
+            audience. Synchronisation parfaite, zéro latence — pour des moments
+            vraiment mémorables.
           </p>
           <div className="landing-hero-actions">
             <Link className="btn btn-primary" to="/create">
               Démarrer une présentation
             </Link>
-            <a className="btn btn-secondary" href="#how">
-              Voir la démo
-            </a>
           </div>
         </div>
 
         <div className="landing-hero-visual" aria-hidden>
           <div className="hero-visual-main" />
-          <div className="hero-visual-phone" />
         </div>
       </section>
 

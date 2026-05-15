@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@share-slides/shared": "*",
+    "better-sqlite3": "^12.10.0",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "express-rate-limit": "^7.5.0",
@@ -19,6 +20,7 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
     "@types/cors": "^2.8.18",
     "@types/express": "^5.0.2",
     "@types/multer": "^1.4.12",

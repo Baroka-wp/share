@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import type { PresenceClient } from "@share-slides/shared";
 import PdfViewer from "./PdfViewer";
@@ -12,11 +12,14 @@ type Props = {
   pageCount: number;
   connected: boolean;
   shareUrl: string;
+  pin: string | null;
   presence: PresenceClient[];
   clientId: string | null;
   allowTakeControl: boolean;
+  requireName: boolean;
   isController: boolean;
   onToggleAllowTakeControl: (allow: boolean) => void;
+  onToggleRequireName: (require: boolean) => void;
   onPrev: () => void;
   onNext: () => void;
 };
@@ -32,11 +35,12 @@ function IconQr() {
   );
 }
 
-function IconUsers() {
+function IconSettings() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.75" />
       <path
-        d="M17 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"
+        d="M12 2v2.5M12 19.5V22M4.93 4.93l1.77 1.77M17.3 17.3l1.77 1.77M2 12h2.5M19.5 12H22M4.93 19.07l1.77-1.77M17.3 6.7l1.77-1.77"
         stroke="currentColor"
         strokeWidth="1.75"
         strokeLinecap="round"
@@ -52,18 +56,35 @@ export default function PresenterView({
   pageCount,
   connected,
   shareUrl,
+  pin,
   presence,
   clientId,
   allowTakeControl,
+  requireName,
   isController,
   onToggleAllowTakeControl,
+  onToggleRequireName,
   onPrev,
   onNext,
 }: Props) {
   const [showQr, setShowQr] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const sidebarRef = useRef<HTMLElement>(null);
+  const [copied, setCopied] = useState<"pin" | "url" | null>(null);
   const activeCount = presence.length;
+
+  function formatPin(value: string): string {
+    return value.length === 6 ? `${value.slice(0, 3)} ${value.slice(3)}` : value;
+  }
+
+  async function copyToClipboard(text: string, kind: "pin" | "url") {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(kind);
+      setTimeout(() => setCopied(null), 1600);
+    } catch {
+      /* clipboard refused — silent */
+    }
+  }
 
   useEffect(() => {
     if (!isController) return;
@@ -86,7 +107,7 @@ export default function PresenterView({
       <PresenterHeader />
 
       <div className="presenter-body">
-        <aside className="presenter-sidebar" ref={sidebarRef}>
+        <aside className="presenter-sidebar">
           <div className="presenter-sidebar-head">
             <h2>Participants</h2>
             <span className="chip chip-active">{activeCount} actifs</span>
@@ -122,6 +143,22 @@ export default function PresenterView({
               <li className="participant-empty">En attente de participants…</li>
             )}
           </ul>
+
+          {pin && (
+            <div className="presenter-share-card">
+              <span className="field-label">Code de session</span>
+              <div className="presenter-share-pin">
+                <span className="presenter-share-pin-value">{formatPin(pin)}</span>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => copyToClipboard(pin, "pin")}
+                >
+                  {copied === "pin" ? "Copié ✓" : "Copier"}
+                </button>
+              </div>
+            </div>
+          )}
 
           <button
             type="button"
@@ -170,18 +207,6 @@ export default function PresenterView({
             <div className="presenter-controls-tools">
               <button
                 type="button"
-                className="presenter-tool"
-                onClick={() => {
-                  setShowSettings(false);
-                  setShowQr(false);
-                  sidebarRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-                }}
-              >
-                <IconUsers />
-                <span>Participants</span>
-              </button>
-              <button
-                type="button"
                 className={`presenter-tool ${showSettings ? "presenter-tool--active" : ""}`}
                 onClick={() => {
                   setShowSettings((s) => !s);
@@ -189,7 +214,7 @@ export default function PresenterView({
                 }}
                 aria-expanded={showSettings}
               >
-                <span aria-hidden>⚙</span>
+                <IconSettings />
                 <span>Réglages</span>
               </button>
             </div>
@@ -208,17 +233,25 @@ export default function PresenterView({
                 />
                 Autoriser la prise de main
               </label>
+              <label className="toggle">
+                <input
+                  type="checkbox"
+                  checked={requireName}
+                  onChange={(e) => onToggleRequireName(e.target.checked)}
+                />
+                Exiger un nom à la connexion
+              </label>
             </div>
           )}
         </div>
       </div>
 
       <footer className="site-footer presenter-site-footer">
-        <p className="site-footer-copy">© 2024 Share Slides. All rights reserved.</p>
+        <p className="site-footer-copy">© {new Date().getFullYear()} Share Slides. Tous droits réservés.</p>
         <nav className="site-footer-nav" aria-label="Legal">
-          <a href="#terms">Terms</a>
-          <a href="#privacy">Privacy</a>
-          <a href="#security">Security</a>
+          <a href="#terms">Conditions</a>
+          <a href="#privacy">Confidentialité</a>
+          <a href="#security">Sécurité</a>
           <a href="#contact">Contact</a>
         </nav>
       </footer>
@@ -233,16 +266,45 @@ export default function PresenterView({
         >
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <h3 id="qr-title">Partager avec l&apos;audience</h3>
-            <p className="text-body">Scannez pour rejoindre — sans secret présentateur.</p>
+            <p className="text-body">
+              Scannez le QR ou partagez le code ci-dessous.
+            </p>
             <div className="qr-wrap">
               <QRCodeSVG value={shareUrl} size={200} level="M" fgColor="#4f46e5" />
             </div>
-            <p className="share-url">
-              <a href={shareUrl} target="_blank" rel="noreferrer">
-                {shareUrl}
-              </a>
-            </p>
-            <button type="button" className="btn btn-primary btn-block" onClick={() => setShowQr(false)}>
+
+            {pin && (
+              <div className="modal-pin">
+                <span className="field-label">Code de session</span>
+                <div className="modal-pin-row">
+                  <span className="modal-pin-value">{formatPin(pin)}</span>
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => copyToClipboard(pin, "pin")}
+                  >
+                    {copied === "pin" ? "Copié ✓" : "Copier"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="modal-share-url">
+              <span className="modal-share-url-text">{shareUrl}</span>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={() => copyToClipboard(shareUrl, "url")}
+              >
+                {copied === "url" ? "Copié ✓" : "Copier le lien"}
+              </button>
+            </div>
+
+            <button
+              type="button"
+              className="btn btn-primary btn-block"
+              onClick={() => setShowQr(false)}
+            >
               Fermer
             </button>
           </div>

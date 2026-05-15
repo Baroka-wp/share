@@ -64,6 +64,7 @@ export default function JoinPage() {
         return;
       }
       sessionStorage.setItem(`pin:${data.roomId}`, pin);
+      sessionStorage.setItem(`role:${data.roomId}`, "viewer");
       navigate(`/j/${data.roomId}`);
     } catch {
       setError(true);

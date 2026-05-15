@@ -13,6 +13,7 @@ export interface RoomPublic {
   controllerId: string | null;
   allowTakeControl: boolean;
   hasPin: boolean;
+  requireName: boolean;
   createdAt: number;
   expiresAt: number;
 }
@@ -28,6 +29,7 @@ export type ServerMessage =
   | { type: "SLIDE"; page: number; controllerId: string }
   | { type: "CONTROL"; controllerId: string; controllerName: string }
   | { type: "PRESENCE"; clients: PresenceClient[] }
+  | { type: "PRESENTER_CONFIG"; pin: string | null }
   | { type: "ERROR"; message: string };
 
 export type ClientMessage =
@@ -35,6 +37,7 @@ export type ClientMessage =
   | { type: "REQUEST_CONTROL" }
   | { type: "RELEASE_CONTROL" }
   | { type: "SET_ALLOW_TAKE_CONTROL"; allow: boolean }
+  | { type: "SET_REQUIRE_NAME"; require: boolean }
   | { type: "SET_PIN"; pin: string | null }
   | { type: "SET_NAME"; name: string };
 

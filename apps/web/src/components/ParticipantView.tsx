@@ -1,9 +1,8 @@
-import { useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import PdfViewer from "./PdfViewer";
 import type { PresenceClient } from "@share-slides/shared";
 
 type Props = {
-  title: string;
   pdfUrl: string;
   currentPage: number;
   pageCount: number;
@@ -12,9 +11,11 @@ type Props = {
   isController: boolean;
   allowTakeControl: boolean;
   presence: PresenceClient[];
+  myName: string;
   onPrev: () => void;
   onNext: () => void;
   onTakeControl: () => void;
+  onChangeName: (name: string) => void;
 };
 
 function IconUsers() {
@@ -31,7 +32,6 @@ function IconUsers() {
 }
 
 export default function ParticipantView({
-  title,
   pdfUrl,
   currentPage,
   pageCount,
@@ -40,12 +40,33 @@ export default function ParticipantView({
   isController,
   allowTakeControl,
   presence,
+  myName,
   onPrev,
   onNext,
   onTakeControl,
+  onChangeName,
 }: Props) {
-  const [tab, setTab] = useState<"slides" | "people" | "settings">("slides");
+  const [showSettings, setShowSettings] = useState(false);
   const [showZoomHint, setShowZoomHint] = useState(true);
+  const [nameDraft, setNameDraft] = useState(myName);
+  const [nameSaved, setNameSaved] = useState(false);
+
+  useEffect(() => {
+    if (!showSettings) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setShowSettings(false);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [showSettings]);
+
+  function submitName(e: FormEvent) {
+    e.preventDefault();
+    const trimmed = nameDraft.trim();
+    onChangeName(trimmed);
+    setNameSaved(true);
+    setTimeout(() => setNameSaved(false), 1800);
+  }
 
   return (
     <div className="participant-room">
@@ -62,60 +83,86 @@ export default function ParticipantView({
         </span>
       </div>
 
-      {tab === "slides" && (
-        <main className="participant-stage">
-          <div className="participant-pdf-wrap">
-            <PdfViewer url={pdfUrl} page={currentPage} />
-            {showZoomHint && (
-              <button
-                type="button"
-                className="zoom-hint"
-                onClick={() => setShowZoomHint(false)}
-                aria-label="Fermer l'indication"
-              >
-                <span className="zoom-hint-icon" aria-hidden>
-                  ⤢
-                </span>
-                Pincez pour zoomer sur le contenu
-              </button>
-            )}
-          </div>
-          {!isController && allowTakeControl && (
+      <main className="participant-stage">
+        <div className="participant-pdf-wrap">
+          <PdfViewer url={pdfUrl} page={currentPage} />
+          {showZoomHint && (
             <button
               type="button"
-              className="btn-take-control"
-              onClick={onTakeControl}
+              className="zoom-hint"
+              onClick={() => setShowZoomHint(false)}
+              aria-label="Fermer l'indication"
             >
-              <span aria-hidden>▢</span>
-              Prendre la main
+              <span className="zoom-hint-icon" aria-hidden>
+                ⤢
+              </span>
+              Pincez pour zoomer sur le contenu
             </button>
           )}
-        </main>
-      )}
+        </div>
+        {!isController && allowTakeControl && (
+          <button
+            type="button"
+            className="btn-take-control"
+            onClick={onTakeControl}
+          >
+            <span aria-hidden>▢</span>
+            Prendre la main
+          </button>
+        )}
+      </main>
 
-      {tab === "people" && (
-        <main className="participant-panel">
-          <h2 className="text-headline">Participants</h2>
-          <p className="text-muted">{title}</p>
-          <ul className="presence-list presence-list--panel">
-            {presence.map((c) => (
-              <li key={c.id}>
-                <span>{c.name}</span>
-                {c.isController && <span className="chip">Contrôle</span>}
-              </li>
-            ))}
-          </ul>
-        </main>
-      )}
+      {showSettings && (
+        <div
+          className="modal-backdrop"
+          role="dialog"
+          aria-modal
+          aria-labelledby="settings-modal-title"
+          onClick={() => setShowSettings(false)}
+        >
+          <div className="modal-card modal-card--sheet" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-card-header">
+              <h2 id="settings-modal-title" className="text-headline">
+                Réglages
+              </h2>
+              <button
+                type="button"
+                className="modal-close"
+                aria-label="Fermer"
+                onClick={() => setShowSettings(false)}
+              >
+                ×
+              </button>
+            </div>
+            <p className="text-body modal-card-lead">
+              Page {currentPage} sur {pageCount}. Les slides suivent{" "}
+              {controllerName} tant que vous n&apos;avez pas la main.
+            </p>
 
-      {tab === "settings" && (
-        <main className="participant-panel">
-          <h2 className="text-headline">Réglages</h2>
-          <p className="text-body">
-            Page {currentPage} sur {pageCount}. Les slides suivent{" "}
-            {controllerName} tant que vous n&apos;avez pas la main.
-          </p>
-        </main>
+            <form className="form" onSubmit={submitName}>
+              <div className="field">
+                <span className="field-label">Votre nom</span>
+                <input
+                  type="text"
+                  value={nameDraft}
+                  onChange={(e) => {
+                    setNameDraft(e.target.value);
+                    setNameSaved(false);
+                  }}
+                  placeholder="ex: Camille"
+                  maxLength={40}
+                />
+              </div>
+              <button
+                className="btn btn-primary btn-block"
+                type="submit"
+                disabled={nameDraft.trim() === myName.trim()}
+              >
+                {nameSaved ? "Enregistré ✓" : "Enregistrer"}
+              </button>
+            </form>
+          </div>
+        </div>
       )}
 
       <nav className="bottom-nav" aria-label="Navigation">
@@ -139,16 +186,9 @@ export default function ParticipantView({
         </button>
         <button
           type="button"
-          className={`bottom-nav-item ${tab === "people" ? "bottom-nav-item--active" : ""}`}
-          onClick={() => setTab("people")}
-        >
-          <IconUsers />
-          Participants
-        </button>
-        <button
-          type="button"
-          className={`bottom-nav-item ${tab === "settings" ? "bottom-nav-item--active" : ""}`}
-          onClick={() => setTab("settings")}
+          className={`bottom-nav-item ${showSettings ? "bottom-nav-item--active" : ""}`}
+          onClick={() => setShowSettings((open) => !open)}
+          aria-expanded={showSettings}
         >
           <span aria-hidden>⚙</span>
           Réglages

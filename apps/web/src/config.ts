@@ -5,7 +5,9 @@ export function apiUrl(path: string): string {
   return `${API_BASE}${path}`;
 }
 
-export function joinUrl(roomId: string): string {
+export function joinUrl(roomId: string, pin?: string | null): string {
   const base = window.location.origin;
-  return `${base}/j/${roomId}`;
+  const cleaned = pin?.replace(/\D/g, "") ?? "";
+  const qs = cleaned ? `?pin=${cleaned}` : "";
+  return `${base}/j/${roomId}${qs}`;
 }

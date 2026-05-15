@@ -34,6 +34,7 @@ export function useRoomSocket({
   const [controllerName, setControllerName] = useState("Presenter");
   const [presence, setPresence] = useState<PresenceClient[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [presenterPin, setPresenterPin] = useState<string | null>(null);
 
   const isController = clientId !== null && clientId === controllerId;
 
@@ -82,6 +83,9 @@ export function useRoomSocket({
         case "PRESENCE":
           setPresence(msg.clients);
           break;
+        case "PRESENTER_CONFIG":
+          setPresenterPin(msg.pin);
+          break;
         case "ERROR":
           setError(msg.message);
           break;
@@ -112,6 +116,7 @@ export function useRoomSocket({
     controllerId,
     controllerName,
     presence,
+    presenterPin,
     error,
     isController,
     send,

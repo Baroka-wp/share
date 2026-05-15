@@ -4,6 +4,8 @@ import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 
 pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
 
+const MAX_DPR = 3;
+
 function isRenderCancelled(err: unknown): boolean {
   if (!err || typeof err !== "object") return false;
   const name = "name" in err ? String((err as { name: string }).name) : "";
@@ -22,6 +24,7 @@ export default function PdfViewer({ url, page, className }: Props) {
   const renderTaskRef = useRef<pdfjs.RenderTask | null>(null);
   const [docReady, setDocReady] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [renderTick, setRenderTick] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -56,6 +59,24 @@ export default function PdfViewer({ url, page, className }: Props) {
     };
   }, [url]);
 
+  // Re-render when the container is resized so the canvas stays crisp.
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const container = canvas?.parentElement;
+    if (!container || typeof ResizeObserver === "undefined") return;
+
+    let raf = 0;
+    const ro = new ResizeObserver(() => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => setRenderTick((t) => t + 1));
+    });
+    ro.observe(container);
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+    };
+  }, []);
+
   useEffect(() => {
     if (!docReady) return;
 
@@ -80,13 +101,18 @@ export default function PdfViewer({ url, page, className }: Props) {
 
         const base = pdfPage.getViewport({ scale: 1 });
         const container = canvas.parentElement;
-        const maxWidth = Math.max(container?.clientWidth ?? 0, 320);
-        const scale = Math.max(maxWidth / base.width, 0.25);
-        const viewport = pdfPage.getViewport({ scale });
+        const cssWidth = Math.max(container?.clientWidth ?? 0, 320);
+        const cssScale = Math.max(cssWidth / base.width, 0.25);
 
-        const ctx = canvas.getContext("2d");
+        const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
+        const viewport = pdfPage.getViewport({ scale: cssScale * dpr });
+
+        const ctx = canvas.getContext("2d", { alpha: false });
         if (!ctx) throw new Error("Canvas unavailable");
 
+        // Backing store at full DPR for crisp rendering on Retina / mobile.
+        // CSS keeps `width: 100%` from styles.css, so the canvas displays at
+        // container width while having a higher-resolution pixel buffer.
         canvas.width = Math.floor(viewport.width);
         canvas.height = Math.floor(viewport.height);
 
@@ -106,7 +132,7 @@ export default function PdfViewer({ url, page, className }: Props) {
       cancelled = true;
       cancelRender();
     };
-  }, [docReady, page]);
+  }, [docReady, page, renderTick]);
 
   if (err) {
     return <div className="pdf-error">{err}</div>;

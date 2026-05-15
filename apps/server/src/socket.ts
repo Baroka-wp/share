@@ -6,7 +6,7 @@ import type {
   ServerMessage,
 } from "@share-slides/shared";
 import type { RoomState } from "@share-slides/shared";
-import { toPublic, type getRoom } from "./rooms.js";
+import { saveRoom, toPublic, type getRoom } from "./rooms.js";
 import type { ConnectedClient } from "./types.js";
 
 type Deps = {
@@ -58,8 +58,13 @@ export function attachSocketHandlers(deps: Deps): void {
 
         const role: ClientRole = isPresenter ? "presenter" : "viewer";
         const id = crypto.randomUUID();
+        const trimmedName = payload.name?.trim().slice(0, 40) ?? "";
+        if (!isPresenter && room.requireName && !trimmedName) {
+          emitError(socket, "Le présentateur exige un nom pour rejoindre");
+          return;
+        }
         const name =
-          (payload.name && payload.name.trim().slice(0, 40)) ||
+          trimmedName ||
           (role === "presenter" ? "Presenter" : `Guest ${id.slice(0, 4)}`);
 
         const activeController = [...clientsBySocket.values()].some(
@@ -91,6 +96,14 @@ export function attachSocketHandlers(deps: Deps): void {
           clientId: id,
         };
         socket.emit("message", stateMsg);
+
+        if (role === "presenter") {
+          socket.emit("message", {
+            type: "PRESENTER_CONFIG",
+            pin: room.pin,
+          } satisfies ServerMessage);
+        }
+
         broadcastPresence(room.id);
 
         const slideMsg: ServerMessage = {
@@ -120,17 +133,41 @@ export function attachSocketHandlers(deps: Deps): void {
         case "SET_ALLOW_TAKE_CONTROL": {
           if (client.role !== "presenter") return;
           room.allowTakeControl = raw.allow;
+          saveRoom(room);
+          io.to(room.id).emit("message", {
+            type: "STATE",
+            room: toPublic(room),
+            role: client.role,
+            clientId: client.id,
+          } satisfies ServerMessage);
+          break;
+        }
+        case "SET_REQUIRE_NAME": {
+          if (client.role !== "presenter") return;
+          room.requireName = raw.require;
+          saveRoom(room);
+          io.to(room.id).emit("message", {
+            type: "STATE",
+            room: toPublic(room),
+            role: client.role,
+            clientId: client.id,
+          } satisfies ServerMessage);
           break;
         }
         case "SET_PIN": {
           if (client.role !== "presenter") return;
           room.pin = raw.pin;
           room.hasPin = Boolean(raw.pin);
+          saveRoom(room);
           io.to(room.id).emit("message", {
             type: "STATE",
             room: toPublic(room),
             role: client.role,
             clientId: client.id,
+          } satisfies ServerMessage);
+          socket.emit("message", {
+            type: "PRESENTER_CONFIG",
+            pin: room.pin,
           } satisfies ServerMessage);
           break;
         }
@@ -184,6 +221,7 @@ export function attachSocketHandlers(deps: Deps): void {
           const page = Math.max(1, Math.min(room.pageCount, raw.page));
           if (page === room.currentPage) return;
           room.currentPage = page;
+          saveRoom(room);
           const msg: ServerMessage = {
             type: "SLIDE",
             page,

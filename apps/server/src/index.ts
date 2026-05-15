@@ -98,11 +98,15 @@ app.post("/api/rooms", upload.single("pdf"), async (req, res) => {
         ? req.body.pin.trim()
         : null;
 
+    const requireName =
+      req.body.requireName === "true" || req.body.requireName === true;
+
     const room = createRoom({
       title,
       pdfPath: req.file.filename,
       pageCount,
       pin,
+      requireName,
     });
 
     const base = publicBaseUrl(req);

@@ -49,6 +49,7 @@ export default function CreatePage() {
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
   const [pin, setPin] = useState(() => generateSessionPin());
+  const [requireName, setRequireName] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -91,6 +92,7 @@ export default function CreatePage() {
     body.append("pdf", file);
     if (title.trim()) body.append("title", title.trim());
     body.append("pin", pinForApi(pin));
+    body.append("requireName", requireName ? "true" : "false");
 
     try {
       const res = await fetch(apiUrl("/api/rooms"), { method: "POST", body });
@@ -110,18 +112,6 @@ export default function CreatePage() {
     <AppShell showFooter footer={<SiteFooter />}>
       <div className="create-page">
         <div className="session-card">
-          <nav className="stepper" aria-label="Étapes">
-            <div className="stepper-step stepper-step--active">
-              <span className="stepper-dot">1</span>
-              <span className="stepper-label">Upload PDF</span>
-            </div>
-            <div className="stepper-line" aria-hidden />
-            <div className="stepper-step stepper-step--inactive">
-              <span className="stepper-dot">2</span>
-              <span className="stepper-label">Options</span>
-            </div>
-          </nav>
-
           <header className="session-card-header">
             <h1 className="text-headline">Nouvelle session</h1>
             <p className="text-body session-subtitle">
@@ -208,6 +198,15 @@ export default function CreatePage() {
                 </button>
               </div>
             </div>
+
+            <label className="toggle">
+              <input
+                type="checkbox"
+                checked={requireName}
+                onChange={(e) => setRequireName(e.target.checked)}
+              />
+              Exiger un nom à la connexion des participants
+            </label>
 
             {error && <p className="form-error">{error}</p>}
 
