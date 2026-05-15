@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/config.ts","./src/main.tsx","./src/components/pdfviewer.tsx","./src/hooks/useroomsocket.ts","./src/pages/createpage.tsx","./src/pages/homepage.tsx","./src/pages/roompage.tsx"],"errors":true,"version":"5.9.3"}
